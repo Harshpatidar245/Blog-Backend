@@ -25,6 +25,19 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
+
+     // Admin login (from .env)
+    if (
+      email === process.env.ADMIN_EMAIL &&
+      password === process.env.ADMIN_PASSWORD
+    ) {
+      const token = jwt.sign({ role: "admin" }, JWT_SECRET, { expiresIn: "7d" });
+      return res.json({
+        token,
+        user: { id: "env-admin", name: "Admin", email, role: "admin" },
+      });
+    }
+
     if (!email || !password) return res.status(400).json({ message: "Email and password required" });
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: "Invalid credentials" });
